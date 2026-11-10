@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Election Results - ElectroVote</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1 class="neon-title">📊 Live Results</h1>
+
+    <!-- ============================================= -->
+    <!-- RESULTS CONTAINER (populated by JavaScript)    -->
+    <!-- ============================================= -->
+    <div id="resultsContainer">
+      <p style="text-align: center; opacity: 0.7;">Loading results...</p>
+    </div>
+
+    <!-- ============================================= -->
+    <!-- NAVIGATION                                     -->
+    <!-- ============================================= -->
+    <div style="text-align: center; margin-top: 40px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
+      <a href="index.html" class="neon-link">⬅ Back to Login</a>
+      <a href="admin.html" class="neon-link" style="float: right; font-size: 0.9rem; opacity: 0.7;">🔧 Admin Panel</a>
+    </div>
+
+    <!-- ============================================= -->
+    <!-- LIVE INDICATOR                                 -->
+    <!-- ============================================= -->
+    <div style="text-align: center; margin-top: 15px; font-size: 0.85rem; opacity: 0.5;">
+      <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--neon-green); box-shadow: 0 0 10px var(--neon-green); margin-right: 6px; animation: pulseGlow 2s infinite;"></span>
+      Live — updates automatically every 5 seconds
+    </div>
+  </div>
+
+  <!-- Shared client helpers (api(), escapeHTML()) -->
+  <script src="script.js"></script>
+
+  <!-- Results page logic -->
+  <script>
+    // ---------------------------------------------------------
+    // TRACK PREVIOUS VALUES TO ANIMATE CHANGES
+    // ---------------------------------------------------------
+    let previousCounts = {};  // { candidateId: vote_count }
+
+    // ---------------------------------------------------------
+    // FETCH RESULTS FROM SERVER
+    // ---------------------------------------------------------
+    async function loadResults() {
+      const { ok, data } = await api('/api/results');
+
+      if (!ok) {
+        document.getElementById('resultsContainer').innerHTML =
+          '<p style="text-align: center; color: #ff4b4b;">Failed to load results. Is the server running?</p>';
+        return;
+      }
+
+      renderResults(data.results || []);
+    }
+
+    // ---------------------------------------------------------
+    // RENDER RESULTS
+    // ---------------------------------------------------------
+    function renderResults(results) {
+      const container = document.getElementById('resultsContainer');
+
+      // If no positions exist yet
+      if (results.length === 0) {
+        container.innerHTML = '<p style="text-align: center; opacity: 0.7;">No positions have been set up yet.</p>';
+        return;
+      }
+
+      let html = '';
+
+      results.forEach((pos, index) => {
+        // Sort candidates by vote count descending (highest first)
+        const sorted = [...pos.candidates].sort((a, b) => b.vote_count - a.vote_count);
+        const maxVotes = Math.max(...sorted.map(c => c.vote_count), 1);
+
+        // Stagger the pop-in animation slightly for each section
+        const delay = (index * 0.15).toFixed(2);
+
+        html += `<div class="result-section" style="animation-delay: ${delay}s">`;
+        html += `<h2 style="color: var(--neon-yellow); margin-bottom: 20px; text-align: center;">${escapeHTML(pos.title)}</h2>`;
+
+        if (sorted.length === 0) {
+          html += '<p style="text-align: center; opacity: 0.6;">No candidates registered for this position.</p>';
+        } else {
+          sorted.forEach(c => {
+            const votes = c.vote_count || 0;
+            const percent = (votes / maxVotes) * 100;
+            const prevVotes = previousCounts[c.id];
+            const hasChanged = prevVotes !== undefined && prevVotes !== votes;
+
+            // Determine if this is the current leader (for a crown icon)
+            const isLeader = sorted.length > 0 && c.id === sorted[0].id && votes > 0;
+
+            html += `
+              <div class="candidate-result" ${hasChanged ? 'style="animation: pulseFlash 1s ease;"' : ''}>
+                <img src="${c.image_url || 'https://via.placeholder.com/150'}" alt="${escapeHTML(c.name)}">
+                <div style="flex: 1; min-width: 0;">
+                  <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 10px;">
+                    <strong style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                      ${isLeader ? '👑 ' : ''}${escapeHTML(c.name)}
+                    </strong>
+                    <span style="color: var(--neon-blue); font-weight: bold; white-space: nowrap;">
+                      ${votes} ${votes === 1 ? 'vote' : 'votes'}
+                    </span>
+                  </div>
+                  <div class="vote-bar-container">
+                    <div class="vote-bar" style="width: ${percent}%"></div>
+                  </div>
+                </div>
+              </div>`;
+          });
+        }
+
+        html += `</div>`;
+      });
+
+      container.innerHTML = html;
+
+      // Save current counts for next comparison
+      results.forEach(pos => {
+        pos.candidates.forEach(c => {
+          previousCounts[c.id] = c.vote_count || 0;
+        });
+      });
+    }
+
+    // ---------------------------------------------------------
+    // INIT + AUTO REFRESH
+    // ---------------------------------------------------------
+    loadResults();
+    setInterval(loadResults, 5000);  // every 5 seconds
+  </script>
+
+  <!-- Extra CSS for the pulse-flash animation on vote changes -->
+  <style>
+    @keyframes pulseFlash {
+      0%   { background: rgba(57, 255, 20, 0.3); transform: scale(1); }
+      50%  { background: rgba(57, 255, 20, 0.5); transform: scale(1.02); }
+      100% { background: rgba(255, 255, 255, 0.05); transform: scale(1); }
+    }
+  </style>
+</body>
+</html>

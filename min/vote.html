@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cast Your Vote - ElectroVote</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1 class="neon-title">🗳️ Cast Your Vote</h1>
+
+    <!-- ============================================= -->
+    <!-- VOTING AREA (candidate grid injected by JS)    -->
+    <!-- ============================================= -->
+    <div id="votingArea">
+      <p style="text-align: center; opacity: 0.7;">Loading your ballot...</p>
+    </div>
+
+    <!-- ============================================= -->
+    <!-- FINISH MESSAGE (shown after last position)     -->
+    <!-- ============================================= -->
+    <div id="finishMessage" class="hidden" style="text-align: center; margin-top: 30px;">
+      <h2 style="color: var(--neon-green); margin-bottom: 20px;">🎉 Thank you for voting!</h2>
+      <p style="margin-bottom: 25px;">Your votes have been recorded securely.</p>
+      <a href="results.html" class="neon-link" style="font-size: 1.1rem;">📊 See Live Results</a>
+      <div style="margin-top: 15px;">
+        <a href="index.html" class="neon-link" style="font-size: 0.9rem; opacity: 0.6;">Sign out</a>
+      </div>
+    </div>
+
+    <!-- ============================================= -->
+    <!-- ERROR MESSAGE                                  -->
+    <!-- ============================================= -->
+    <div id="errorMsg" class="error"></div>
+  </div>
+
+  <!-- Load shared client helpers (api(), escapeHTML(), setToken(), sessionToken) -->
+  <script src="script.js"></script>
+
+  <!-- Voting page logic -->
+  <script>
+    // ---------------------------------------------------------
+    // STATE
+    // ---------------------------------------------------------
+    let ballot = [];              // Array of positions with candidates
+    let currentIndex = 0;         // Which position we're on
+    let selectedCandidateId = null;
+
+    // ---------------------------------------------------------
+    // LOAD BALLOT FROM SERVER
+    // ---------------------------------------------------------
+    async function loadBallot() {
+      const { ok, data, status } = await api('/api/ballot');
+
+      if (!ok || status === 401) {
+        // Session expired or invalid → back to login
+        setToken(null);
+        window.location.href = 'index.html';
+        return;
+      }
+
+      ballot = data.ballot || [];
+      renderCurrentPosition();
+    }
+
+    // ---------------------------------------------------------
+    // RENDER CURRENT POSITION
+    // ---------------------------------------------------------
+    function renderCurrentPosition() {
+      const area = document.getElementById('votingArea');
+
+      // Skip positions that have already been voted on
+      while (currentIndex < ballot.length && ballot[currentIndex].voted) {
+        currentIndex++;
+      }
+
+      // All done?
+      if (currentIndex >= ballot.length) {
+        showFinish();
+        return;
+      }
+
+      const pos = ballot[currentIndex];
+      selectedCandidateId = null;
+
+      // Build the HTML
+      let html = `<h2 class="neon-title" style="font-size: 1.8rem;">${escapeHTML(pos.title)}</h2>`;
+      html += `<p style="text-align: center; margin-bottom: 20px; opacity: 0.7;">Select one candidate</p>`;
+
+      if (!pos.candidates || pos.candidates.length === 0) {
+        html += `<p style="text-align: center; opacity: 0.6;">No candidates for this position.</p>`;
+        html += `<div class="clearfix">
+                   <button class="glow-btn next-btn" onclick="nextPosition()">Skip ➤</button>
+                 </div>`;
+        area.innerHTML = html;
+        return;
+      }
+
+      // Candidate grid
+      html += `<div class="voting-grid" id="candidateGrid">`;
+      pos.candidates.forEach(c => {
+        const img = c.image_url || 'https://via.placeholder.com/150';
+        html += `
+          <div class="candidate-card" data-candidate-id="${c.id}" onclick="selectCandidate(this)">
+            <img src="${img}" alt="${escapeHTML(c.name)}">
+            <p><strong>${escapeHTML(c.name)}</strong></p>
+          </div>`;
+      });
+      html += `</div>`;
+
+      // Vote button (disabled until a candidate is selected)
+      html += `<button class="glow-btn vote-btn" id="voteButton" disabled
+                      onclick="castVote(${pos.id})">
+                 Vote for this position
+               </button>`;
+
+      // Next button — 4cm below, right aligned
+      html += `<div class="clearfix">
+                 <button class="glow-btn next-btn" id="nextButton" disabled
+                         onclick="nextPosition()">
+                   Next ➤
+                 </button>
+               </div>`;
+
+      area.innerHTML = html;
+    }
+
+    // ---------------------------------------------------------
+    // CANDIDATE SELECTION
+    // ---------------------------------------------------------
+    function selectCandidate(el) {
+      document.querySelectorAll('.candidate-card').forEach(c => c.classList.remove('selected'));
+      el.classList.add('selected');
+      selectedCandidateId = parseInt(el.dataset.candidateId, 10);
+      document.getElementById('voteButton').disabled = false;
+    }
+
+    // ---------------------------------------------------------
+    // CAST VOTE (sends to secure server endpoint)
+    // ---------------------------------------------------------
+    async function castVote(positionId) {
+      if (!selectedCandidateId) return;
+
+      const btn = document.getElementById('voteButton');
+      btn.disabled = true;
+      btn.textContent = 'Recording...';
+
+      const { ok, data, status } = await api('/api/vote', 'POST', {
+        position_id: positionId,
+        candidate_id: selectedCandidateId
+      });
+
+      if (status === 401) {
+        setToken(null);
+        window.location.href = 'index.html';
+        return;
+      }
+
+      if (ok) {
+        btn.textContent = '✅ Vote Recorded';
+        btn.style.background = 'linear-gradient(135deg, #39ff14, #00b09b)';
+        btn.style.boxShadow = '0 0 20px #39ff14';
+        document.getElementById('nextButton').disabled = false;
+
+        // Mark locally so we don't re-render this one
+        ballot[currentIndex].voted = true;
+      } else {
+        alert(data.error || 'Vote failed. Please try again.');
+        btn.disabled = false;
+        btn.textContent = 'Vote for this position';
+      }
+    }
+
+    // ---------------------------------------------------------
+    // ADVANCE TO NEXT POSITION
+    // ---------------------------------------------------------
+    function nextPosition() {
+      currentIndex++;
+      selectedCandidateId = null;
+      renderCurrentPosition();
+    }
+
+    // ---------------------------------------------------------
+    // SHOW FINISH MESSAGE
+    // ---------------------------------------------------------
+    function showFinish() {
+      document.getElementById('votingArea').classList.add('hidden');
+      document.getElementById('finishMessage').classList.remove('hidden');
+    }
+
+    // ---------------------------------------------------------
+    // INIT
+    // ---------------------------------------------------------
+    loadBallot();
+  </script>
+</body>
+</html>
