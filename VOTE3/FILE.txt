@@ -1,7 +1,0 @@
- http://localhost:8000/index.html
-
-✅ http://localhost:8000/admin.html
-
-✅ http://localhost:8000/vote.html
-
-✅ http://localhost:8000/results.html
