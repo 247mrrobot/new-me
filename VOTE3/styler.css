@@ -1,0 +1,618 @@
+/* =========================================================
+   ELECTROVOTE — NEON THEME STYLESHEET
+   Covers: index.html, vote.html, results.html, admin.html
+   ========================================================= */
+
+/* ---------- ROOT VARIABLES ---------- */
+:root {
+  --bg-dark: #0a0a1a;
+  --glass-bg: rgba(20, 20, 50, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --neon-blue: #00f0ff;
+  --neon-pink: #ff00aa;
+  --neon-green: #39ff14;
+  --neon-yellow: #ffcc00;
+  --neon-red: #ff416c;
+  --glow-shadow: 0 0 10px currentColor, 0 0 20px currentColor;
+  --border-radius: 16px;
+  --transition: all 0.3s ease;
+}
+
+/* ---------- GLOBAL RESET ---------- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  min-height: 100%;
+}
+
+body {
+  background: radial-gradient(circle at top, #1a1a3e 0%, #0a0a1a 70%);
+  background-attachment: fixed;
+  font-family: 'Segoe UI', 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #fff;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 30px 20px;
+  overflow-x: hidden;
+}
+
+/* ---------- LAYOUT ---------- */
+.container {
+  width: 100%;
+  max-width: 700px;
+  padding: 40px;
+  border-radius: var(--border-radius);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.5),
+    inset 0 0 20px rgba(0, 240, 255, 0.05);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  animation: fadeInUp 0.6s ease;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* ---------- ENTRANCE ANIMATION ---------- */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------- TYPOGRAPHY ---------- */
+h1, h2, h3 {
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+h3 {
+  margin: 25px 0 15px;
+  color: var(--neon-blue);
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+
+.neon-title {
+  font-size: 2.5rem;
+  text-align: center;
+  margin-bottom: 30px;
+  font-weight: 800;
+  background: linear-gradient(45deg, var(--neon-blue), var(--neon-pink), var(--neon-blue));
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: titleShift 5s ease infinite;
+  filter: drop-shadow(0 0 15px rgba(0, 240, 255, 0.5));
+}
+
+@keyframes titleShift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ---------- FORM INPUTS ---------- */
+.input-group {
+  margin: 20px 0;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 14px 18px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 12px;
+  color: #fff;
+  font-size: 1rem;
+  font-family: inherit;
+  outline: none;
+  transition: var(--transition);
+}
+
+input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--neon-blue);
+  background: rgba(0, 240, 255, 0.05);
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+}
+
+select option {
+  background: #1a1a3e;
+  color: #fff;
+}
+
+/* ---------- BUTTONS ---------- */
+.glow-btn {
+  background: linear-gradient(135deg, var(--neon-blue), var(--neon-pink));
+  background-size: 200% 200%;
+  color: #fff;
+  border: none;
+  padding: 14px 30px;
+  font-size: 1rem;
+  font-weight: bold;
+  font-family: inherit;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 10px 0;
+  display: inline-block;
+  position: relative;
+  overflow: hidden;
+  animation: btnGradientShift 6s ease infinite;
+}
+
+@keyframes btnGradientShift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.glow-btn:hover:not(:disabled) {
+  transform: scale(1.03);
+  box-shadow: 0 0 30px rgba(255, 0, 170, 0.7), 0 0 60px rgba(0, 240, 255, 0.5);
+}
+
+.glow-btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.glow-btn:disabled {
+  background: linear-gradient(135deg, #555, #333);
+  color: rgba(255, 255, 255, 0.5);
+  box-shadow: none;
+  cursor: not-allowed;
+  animation: none;
+}
+
+/* Pulsing accent for primary actions */
+.pulse {
+  animation: pulseGlow 2s ease-in-out infinite, btnGradientShift 6s ease infinite;
+}
+
+@keyframes pulseGlow {
+  0%   { box-shadow: 0 0 10px var(--neon-blue); }
+  50%  { box-shadow: 0 0 25px var(--neon-pink), 0 0 45px var(--neon-blue); }
+  100% { box-shadow: 0 0 10px var(--neon-blue); }
+}
+
+/* Delete button */
+.delete-btn {
+  background: var(--neon-red);
+  color: #fff;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: bold;
+  transition: var(--transition);
+  font-family: inherit;
+}
+
+.delete-btn:hover {
+  background: #d8305a;
+  box-shadow: 0 0 12px var(--neon-red);
+}
+
+/* ---------- FILE INPUT (custom glowing) ---------- */
+input[type="file"] {
+  color: #fff;
+  font-size: 0.9rem;
+}
+
+input[type="file"]::file-selector-button {
+  background: linear-gradient(135deg, var(--neon-blue), var(--neon-pink));
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 50px;
+  cursor: pointer;
+  font-weight: bold;
+  margin-right: 15px;
+  transition: var(--transition);
+  box-shadow: 0 0 10px var(--neon-blue);
+  font-family: inherit;
+}
+
+input[type="file"]::file-selector-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px var(--neon-pink);
+}
+
+/* ---------- LOGIN / MISC ---------- */
+.error {
+  color: #ff4b4b;
+  text-align: center;
+  margin: 15px 0;
+  font-weight: bold;
+  min-height: 20px;
+  text-shadow: 0 0 8px rgba(255, 75, 75, 0.6);
+}
+
+.neon-link {
+  color: var(--neon-blue);
+  text-decoration: none;
+  font-weight: bold;
+  transition: var(--transition);
+  display: inline-block;
+  margin: 10px;
+  position: relative;
+}
+
+.neon-link:hover {
+  color: var(--neon-pink);
+  text-shadow: 0 0 10px var(--neon-pink);
+}
+
+/* ---------- TABLES (admin) ---------- */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+  font-size: 0.95rem;
+}
+
+th, td {
+  padding: 12px 10px;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+th {
+  background: rgba(0, 240, 255, 0.1);
+  color: var(--neon-blue);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+tr:hover td {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* ---------- TABS (admin) ---------- */
+.tab {
+  overflow: hidden;
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.tab button, .tablinks {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #fff;
+  padding: 10px 22px;
+  cursor: pointer;
+  border-radius: 30px;
+  transition: var(--transition);
+  font-family: inherit;
+  font-weight: bold;
+  font-size: 0.95rem;
+}
+
+.tab button:hover, .tablinks:hover {
+  background: rgba(0, 240, 255, 0.15);
+  border-color: var(--neon-blue);
+}
+
+.tab button.active, .tablinks.active {
+  background: var(--neon-blue);
+  color: #000;
+  border-color: var(--neon-blue);
+  box-shadow: 0 0 15px var(--neon-blue);
+}
+
+.tabcontent, .tab-content {
+  display: none;
+}
+
+.tabcontent.active, .tab-content.active {
+  display: block;
+  animation: fadeInUp 0.4s ease;
+}
+
+/* ---------- VOTING GRID ---------- */
+.voting-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 20px;
+  margin: 30px 0;
+}
+
+.candidate-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--border-radius);
+  padding: 15px;
+  text-align: center;
+  cursor: pointer;
+  transition: var(--transition);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
+}
+
+.candidate-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(0, 240, 255, 0.15), transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.candidate-card:hover {
+  border-color: var(--neon-blue);
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+  transform: translateY(-5px);
+}
+
+.candidate-card:hover::before {
+  opacity: 1;
+}
+
+.candidate-card.selected {
+  border-color: var(--neon-green);
+  box-shadow: 0 0 25px var(--neon-green), inset 0 0 15px rgba(57, 255, 20, 0.1);
+  background: rgba(57, 255, 20, 0.08);
+}
+
+.candidate-card.selected::after {
+  content: '✓';
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  background: var(--neon-green);
+  color: #000;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  box-shadow: 0 0 15px var(--neon-green);
+  animation: checkPop 0.3s ease;
+}
+
+@keyframes checkPop {
+  0%   { transform: scale(0); }
+  70%  { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+.candidate-card img {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: #1a1a3e;
+}
+
+.candidate-card p {
+  font-size: 0.95rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------- VOTE & NEXT BUTTONS ---------- */
+.vote-btn {
+  display: block;
+  margin: 20px auto;
+  width: 100%;
+  max-width: 400px;
+  background: linear-gradient(45deg, #ff416c, #ff4b2b);
+  box-shadow: 0 0 20px rgba(255, 65, 108, 0.6);
+  animation: none;
+}
+
+.vote-btn:hover:not(:disabled) {
+  box-shadow: 0 0 30px rgba(255, 65, 108, 0.9), 0 0 50px rgba(255, 75, 43, 0.5);
+}
+
+.next-btn {
+  float: right;
+  margin-top: 4cm;   /* EXACTLY as specified: 4cm gap below vote button */
+  background: linear-gradient(45deg, #00b09b, #96c93d);
+  box-shadow: 0 0 20px rgba(0, 176, 155, 0.6);
+  animation: none;
+}
+
+.next-btn:hover:not(:disabled) {
+  box-shadow: 0 0 30px rgba(0, 176, 155, 0.9), 0 0 50px rgba(150, 201, 61, 0.5);
+}
+
+.clearfix::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+/* ---------- RESULTS PAGE ---------- */
+.result-section {
+  margin: 35px 0;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: var(--border-radius);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  opacity: 0;
+  transform: scale(0.85);
+  animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes popIn {
+  0%   { opacity: 0; transform: scale(0.85); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.candidate-result {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  margin: 12px 0;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: var(--transition);
+}
+
+.candidate-result img {
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 15px;
+  border: 2px solid var(--neon-blue);
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.5);
+  flex-shrink: 0;
+  background: #1a1a3e;
+}
+
+.vote-bar-container {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  height: 22px;
+  overflow: hidden;
+  margin-top: 6px;
+  position: relative;
+}
+
+.vote-bar {
+  height: 100%;
+  border-radius: 10px;
+  background: linear-gradient(90deg, var(--neon-blue), var(--neon-pink));
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.6);
+  transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Animated shimmer on the vote bar */
+.vote-bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  animation: shimmer 2.5s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0%   { left: -100%; }
+  100% { left: 200%; }
+}
+
+/* ---------- LIVE INDICATOR ---------- */
+.live-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--neon-green);
+  box-shadow: 0 0 10px var(--neon-green);
+  animation: livePulse 1.5s ease-in-out infinite;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+@keyframes livePulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.5; transform: scale(1.4); }
+}
+
+/* ---------- LIST ITEMS (positions in admin) ---------- */
+#positionsList li {
+  list-style: none;
+  margin: 10px 0;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: var(--transition);
+}
+
+#positionsList li:hover {
+  background: rgba(0, 240, 255, 0.08);
+  border-color: var(--neon-blue);
+}
+
+/* ---------- SCROLLBAR ---------- */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0a0a1a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(var(--neon-blue), var(--neon-pink));
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(var(--neon-pink), var(--neon-blue));
+}
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 600px) {
+  .container { padding: 25px 20px; }
+  .neon-title { font-size: 1.8rem; }
+  h3 { font-size: 1rem; }
+  .voting-grid { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; }
+  .candidate-card img { height: 110px; }
+  .next-btn { margin-top: 2cm; }
+  table { font-size: 0.85rem; }
+  th, td { padding: 8px 6px; }
+}
+
+@media (max-width: 400px) {
+  .voting-grid { grid-template-columns: 1fr; }
+  .glow-btn { font-size: 0.9rem; padding: 12px 20px; }
+}
+
+/* ---------- ACCESSIBILITY: reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
